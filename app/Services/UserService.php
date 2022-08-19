@@ -19,27 +19,11 @@ use Symfony\Component\HttpFoundation\Request;
 final class UserService implements UserServiceInterface
 {
     /**
-     * The model instance.
-     *
-     */
-    protected User $model;
-
-    /**
-     * The request instance.
-     *
-     * @var \Illuminate\Http\Request
-     */
-    protected Request $request;
-
-    /**
      * @param User $model
      * @param Request $request
      */
-    public function __construct(User $model, Request $request)
-    {
-        $this->model = $model;
-        $this->request = $request;
-    }
+    public function __construct(protected readonly User $model, protected readonly Request $request)
+    {}
 
     /**
      * Define the validation rules for the model.
@@ -75,15 +59,11 @@ final class UserService implements UserServiceInterface
     /**
      * Retrieve all resources and paginate.
      *
-     * @param ?int $perPage
-     *
      * @return LengthAwarePaginator
      */
-    public function list(?int $perPage = null): LengthAwarePaginator
+    public function list(): LengthAwarePaginator
     {
-        $rowsToShow = $perPage ?? config('constants.defaultItemsPerPage');
-
-        return $this->model::paginate($rowsToShow);
+        return $this->model::paginate(config('constants.defaultItemsPerPage'));
     }
 
     /**
@@ -144,9 +124,7 @@ final class UserService implements UserServiceInterface
      */
     public function listTrashed(): LengthAwarePaginator
     {
-        $rowsToShow = config('constants.defaultItemsPerPage');
-
-        return $this->model::onlyTrashed()->paginate($rowsToShow);
+        return $this->model::onlyTrashed()->paginate(config('constants.defaultItemsPerPage'));
     }
 
     /**

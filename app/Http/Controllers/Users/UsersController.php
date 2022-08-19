@@ -129,6 +129,8 @@ final class UsersController extends Controller
 
             return view('users.edit', compact('user'));
         } catch (ModelNotFoundException $e) {
+            $this->logger->error($e->getMessage(), ['exception' => $e]);
+
             abort(404);
         } catch (Throwable $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
