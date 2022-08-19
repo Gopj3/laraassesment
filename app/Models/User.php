@@ -3,7 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Events\UserSaved;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -57,7 +59,27 @@ class User extends Authenticatable
      *
      * @var array
      */
-    protected $dates = ['deleted_at'];
+    protected $dates = ['deleted_at, created_at'];
+
+    protected $dispatchesEvents = [
+        'saved' => UserSaved::class
+    ];
+
+    /**
+     * @return HasMany
+     */
+    public function details(): HasMany
+    {
+        return $this->HasMany(Detail::class, 'user_id', 'id');
+    }
+
+    /**
+     * @return ?string
+     */
+    public function getMiddleinitialAttribute(): ?string
+    {
+        return $this->middlename ? substr($this->middlename, 0, 1) : null;
+    }
 
     /**
      * Retrieve the user's full name in the format:
@@ -69,13 +91,9 @@ class User extends Authenticatable
      */
     public function getFullNameAttribute(): string
     {
-        if ($this->middlename) {
-            $middleInitial = substr($this->middlename, 0, 1);
-
-            return "$this->firstname $middleInitial. $this->lastname";
-        }
-
-        return "$this->firstname $this->lastname";
+        return $this->middlename
+            ? "$this->firstname $this->middlename $this->lastname"
+            : "$this->firstname $this->lastname";
     }
 
     /**
