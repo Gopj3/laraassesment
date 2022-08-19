@@ -78,7 +78,9 @@ class User extends Authenticatable
      */
     public function getMiddleinitialAttribute(): ?string
     {
-        return $this->middlename ? substr($this->middlename, 0, 1) : null;
+        $middleInitial =  $this->middlename ? substr($this->middlename, 0, 1) : null;
+
+        return $middleInitial ? strtoupper($middleInitial).'.' : null;
     }
 
     /**

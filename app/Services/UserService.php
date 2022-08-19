@@ -199,7 +199,7 @@ class UserService
     public function saveDetails(User $user): void
     {
         $gender = $user->prefixname ? ($user->prefixname === PrefixNameEnum::MR ? 'Male' : 'Female') : null;
-        $details = ['Full Name' => $user->fullname, 'Middle Initial' => "$user->middleinitial.", 'Avatar' => $user->photo, 'Gender' => $gender];
+        $details = ['Full Name' => $user->fullname, 'Middle Initial' => $user->middleinitial, 'Avatar' => $user->photo, 'Gender' => $gender];
 
         $attributes = array_map(function (mixed $attribute, string $key) use ($user) {
             return ['user_id' => $user->id, 'key' => $key, 'value' => $attribute, 'type' => 'bio'];
