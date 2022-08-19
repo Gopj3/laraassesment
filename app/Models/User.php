@@ -91,9 +91,13 @@ class User extends Authenticatable
      */
     public function getFullNameAttribute(): string
     {
-        return $this->middlename
-            ? "$this->firstname $this->middlename $this->lastname"
-            : "$this->firstname $this->lastname";
+        if ($this->middlename) {
+            $middleInitial = substr($this->middlename, 0, 1);
+
+            return "$this->firstname $middleInitial. $this->lastname";
+        }
+
+        return "$this->firstname $this->lastname";
     }
 
     /**
