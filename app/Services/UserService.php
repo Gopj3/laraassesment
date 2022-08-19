@@ -11,9 +11,33 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
+use Symfony\Component\HttpFoundation\Request;
 
 class UserService
 {
+    /**
+     * The model instance.
+     *
+     */
+    protected User $model;
+
+    /**
+     * The request instance.
+     *
+     * @var \Illuminate\Http\Request
+     */
+    protected Request $request;
+
+    /**
+     * @param User $model
+     * @param Request $request
+     */
+    public function __construct(User $model, Request $request)
+    {
+        $this->model = $model;
+        $this->request = $request;
+    }
+
     /**
      * Define the validation rules for the model.
      *
@@ -47,7 +71,7 @@ class UserService
     {
         $rowsToShow = $perPage ?? config('constants.defaultItemsPerPage');
 
-        return User::paginate($rowsToShow);
+        return $this->model::paginate($rowsToShow);
     }
 
     /**
@@ -59,9 +83,7 @@ class UserService
      */
     public function store(array $attributes): User
     {
-        $attributes['password'] = $this->hash($attributes['password']);
-
-        return User::create($attributes);
+        return $this->model::create($attributes);
     }
 
     /**
@@ -70,11 +92,11 @@ class UserService
      *
      * @param  int $id
      *
-     * @return ?User
+     * @return User
      */
-    public function find(int $id): ?User
+    public function find(int $id): User
     {
-        return User::findOrFail($id);
+        return $this->model::findOrFail($id);
     }
 
     /**
@@ -86,24 +108,22 @@ class UserService
      */
     public function update(User $user, array $attributes): bool
     {
-        if (isset($attributes['password'])) {
-            $attributes['password'] = $this->hash($attributes['password']);
-        }
-
+        // TODO make here id instead of user
         $user->update($attributes);
 
         return $user->save();
     }
 
     /**
-     * Permanently delete model resource.
+     * Fully delete model resource.
      *
-     * @param  User $user
+     * @param  int $id
      *
      * @return void
      */
-    public function destroy(User $user): void
+    public function destroy(int $id): void
     {
+        $this->model::withTrashed()->findOrFail($id)->forceDelete();
     }
 
     /**
@@ -113,9 +133,9 @@ class UserService
      */
     public function listTrashed(): LengthAwarePaginator
     {
-        $rowsToShow = $perPage ?? config('constants.defaultItemsPerPage');
+        $rowsToShow = config('constants.defaultItemsPerPage');
 
-        return User::onlyTrashed()->paginate($rowsToShow);
+        return $this->model::onlyTrashed()->paginate($rowsToShow);
     }
 
     /**
@@ -127,7 +147,7 @@ class UserService
      */
     public function restore(string|int $id): void
     {
-        User::withTrashed()->find($id)->restore();
+        $this->model::withTrashed()->find($id)->restore();
     }
 
     /**

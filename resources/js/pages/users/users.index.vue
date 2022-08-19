@@ -23,6 +23,16 @@
             </tr>
             </tbody>
         </table>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                <li
+                    v-for="i in (new Array(lastPage).fill('').keys())"
+                    :key="i"
+                    class="page-item">
+                        <a class="page-link" @click="handleReload(i)" href="#">{{i + 1}}</a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </template>
 
@@ -42,14 +52,24 @@ export default {
                 {name: 'Email', beValue: 'email'},
                 {name: 'Type', beValue: 'type'},
             ],
+            currentPage: 1,
+            lastPage: 0,
         }
     },
     created() {
         this.listUsers();
     },
     methods: {
+        async handleReload(i) {
+            this.currentPage = i + 1;
+            await this.listUsers();
+        },
         async listUsers() {
-            this.users = await getUsersAsync();
+            const {users, currentPage, lastPage} = await getUsersAsync(this.currentPage);
+
+            this.users = users
+            this.currentPage = currentPage;
+            this.lastPage = lastPage;
         },
         showUser(id) {
             this.$router.push(`/users/show/${id}`);

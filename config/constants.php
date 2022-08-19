@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'defaultItemsPerPage' => 25
+    'defaultItemsPerPage' => 10
 ];

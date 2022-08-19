@@ -21,7 +21,6 @@
                     <div class="d-flex mt-2 gap-1 w-100 justify-content-around">
                         <button class="btn btn-outline-success" @click="handleEditNavigation">Edit</button>
                         <button class="btn btn-outline-danger" @click="handleSoftDelete">Temporary Delete</button>
-                        <button class="btn btn-outline-danger">Completely delete</button>
                     </div>
                 </div>
             </div>

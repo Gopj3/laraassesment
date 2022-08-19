@@ -18,9 +18,12 @@
                             {{ user[row.beValue] }}
                         </div>
                     </div>
-                    <div v-else class="d-flex justify-content-center">
+                    <div v-else class="d-flex justify-content-center gap-2">
                         <button class="btn btn-outline-info" @click="restore(user.id)">
                             Restore
+                        </button>
+                        <button class="btn btn-outline-danger" @click="destroy(user.id)">
+                            Delete
                         </button>
                     </div>
                 </td>
@@ -31,7 +34,7 @@
 </template>
 
 <script>
-import {getTrashedListAsync, restoreAsync} from "../../services/users.service";
+import {deleteAsync, getTrashedListAsync, restoreAsync} from "../../services/users.service";
 
 export default {
     name: "users.index",
@@ -54,10 +57,15 @@ export default {
     },
     methods: {
         async listUsers() {
-            this.users = await getTrashedListAsync();
+            const {users} = await getTrashedListAsync();
+            this.users = users;
         },
         async restore(id) {
             await restoreAsync(id);
+            await this.listUsers();
+        },
+        async destroy(id) {
+            await deleteAsync(id);
             await this.listUsers();
         }
     }

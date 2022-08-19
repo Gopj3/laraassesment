@@ -131,11 +131,13 @@ export default {
 
             if (this.actionType === 'edit') {
                 await updateSingleUserAsync(this.userData.id, this.formData);
+                this.$router.go('-1');
 
                 return;
             }
 
             await createUserAsync(this.formData);
+            this.$router.replace('/users');
         },
         onFileChange(e) {
             const file = e.target.files[0];
