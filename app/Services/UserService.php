@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Domain\Enums\DetailKeysEnum;
+use App\Domain\Enums\GendersEnum;
 use App\Domain\Enums\PrefixNameEnum;
-use App\Models\Detail;
 use App\Models\User;
+use App\Services\Interfaces\UserServiceInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +16,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Symfony\Component\HttpFoundation\Request;
 
-class UserService
+final class UserService implements UserServiceInterface
 {
     /**
      * The model instance.
@@ -57,7 +59,16 @@ class UserService
             'suffixname' => 'string|max:255|nullable',
             'prefixname' => [new Enum(PrefixNameEnum::class), 'nullable'],
             'file' => 'file|image|max:10240',
-            'password' => 'string|nullable|max:16'
+            'password' => [
+                'required',
+                'string',
+                'min:6',
+                'max:16',
+                'regex:/[a-z]/',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[@$!%*#?&]/',
+            ]
         ];
     }
 
@@ -198,13 +209,21 @@ class UserService
      */
     public function saveDetails(User $user): void
     {
-        $gender = $user->prefixname ? ($user->prefixname === PrefixNameEnum::MR ? 'Male' : 'Female') : null;
-        $details = ['Full Name' => $user->fullname, 'Middle Initial' => $user->middleinitial, 'Avatar' => $user->photo, 'Gender' => $gender];
+        $gender = $user->prefixname
+            ? ($user->prefixname === PrefixNameEnum::MR ? GendersEnum::Male->value : GendersEnum::Female->value)
+            : null;
+
+        $details = [
+            DetailKeysEnum::FullName->value => $user->fullname,
+            DetailKeysEnum::MiddleInitial->value => $user->middleinitial,
+            DetailKeysEnum::Avatar->value => $user->photo,
+            DetailKeysEnum::Gender->value => $gender
+        ];
 
         $attributes = array_map(function (mixed $attribute, string $key) use ($user) {
             return ['user_id' => $user->id, 'key' => $key, 'value' => $attribute, 'type' => 'bio'];
         }, $details, array_keys($details));
 
-        $user->details()->createMany($attributes);
+        $user->details()->insert($attributes);
     }
 }

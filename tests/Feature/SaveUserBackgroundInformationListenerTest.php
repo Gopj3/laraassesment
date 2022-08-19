@@ -28,18 +28,21 @@ class SaveUserBackgroundInformationListenerTest extends TestCase
     public function it_should_create_user_and_details_of_the_user()
     {
         $user = User::factory()->make();
+        $email = $this->faker()->safeEmail();
+        $username = $this->faker()->userName();
+
         $response = $this->actingAs($user)->post('/users', [
             'firstname' => 'Sally',
             'lastname' => 'Wally',
-            'username' => 's_w',
-            'email' => 's_w@example.com',
-            'password' => 'secret',
+            'username' => $username,
+            'email' => $email,
+            'password' => 'Admin@2022Secret',
             'prefixname' => 'Mrs.',
             'suffixname' => 'suffixname',
             'middlename' => 'senior'
         ]);
 
-        $this->assertDatabaseHas('users', ['email' => 's_w@example.com']);
+        $this->assertDatabaseHas('users', ['email' => $email]);
         $this->assertDatabaseCount('details', 4);
         $response->assertStatus(200);
     }

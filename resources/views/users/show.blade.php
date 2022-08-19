@@ -2,9 +2,9 @@
 
 @section('content')
     <div>
-        @if(!empty($errorMsg))
-            <div class="alert alert-success"> {{ $errorMsg }}</div>
-        @endif
+        <div class="d-flex w-100 justify-content-start">
+            <button onclick="window.location='{{ route('users.index')}}'" class="btn btn-outline-info" >Users</button>
+        </div>
         <div class="d-flex w-100 justify-content-center align-items-center">
             <div class="card" style="width: 24rem;">
                 <div class="w-100 d-flex justify-content-center">
@@ -53,7 +53,7 @@
                         </li>
                     </ul>
 
-                    <div class="d-flex mt-2 gap-1 w-100 justify-content-around">
+                    <div class="d-flex mt-2 gap-1 w-100 justify-content-between">
                         <button onclick="window.location='{{ route('users.edit', $user['id']) }}'" class="btn btn-outline-success" >Edit</button>
                         <form method="POST" id="delete-form" action="{{route('users.delete', [$user->id])}}">
                             {{csrf_field()}}

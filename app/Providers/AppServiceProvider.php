@@ -56,14 +56,13 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        // TODO ANOTHER PROVIDERS
         Route::macro('softDeletes', function ($prefix) {
             Route::group([
                 'prefix' => $prefix,
                 'middleware' => ['auth'],
             ], function () {
-                Route::get('trashed/list',  [UsersController::class, 'trashed'])->name('users.trashed');
-                Route::patch('{id}/restore', [UsersController::class, 'restore'])->name('users.restore');
+                Route::get('trashed',  [UsersController::class, 'trashed'])->name('users.trashed');
+                Route::patch('{user}/restore', [UsersController::class, 'restore'])->name('users.restore');
                 Route::delete('{user}/delete', [UsersController::class, 'delete'])->name('users.delete');
             });
         });
