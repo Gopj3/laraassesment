@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Users\UsersController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,6 +20,10 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('{any}', function () {
-    return view('home');
-})->where('any', '.*');
+//Route::get('{any}', function () {
+//    return view('home');
+//})->where('any', '.*');
+
+Route::softDeletes('users');
+Route::middleware('auth')->resource('users', UsersController::class, ['except' => ['update']]);
+Route::middleware('auth')->post('users/{user}', [UsersController::class, 'update'])->name('users.update');

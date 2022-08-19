@@ -52,11 +52,11 @@ class UserService
             'lastname' => 'required|string|max:255',
             'username' => 'required|string|max:255',
             'email' => ['required', 'max:255', Rule::unique('users')->ignore($user)],
-            'middlename' => 'string|max:255',
-            'suffixname' => 'string|max:255',
-            'prefixname' => [new Enum(PrefixNameEnum::class)],
+            'middlename' => 'string|max:255|nullable',
+            'suffixname' => 'string|max:255|nullable',
+            'prefixname' => [new Enum(PrefixNameEnum::class), 'nullable'],
             'file' => 'file|image|max:10240',
-            'password' => 'string'
+            'password' => 'string|nullable|max:16'
         ];
     }
 
@@ -108,7 +108,6 @@ class UserService
      */
     public function update(User $user, array $attributes): bool
     {
-        // TODO make here id instead of user
         $user->update($attributes);
 
         return $user->save();
@@ -153,12 +152,13 @@ class UserService
     /**
      * Soft delete model resource.
      *
-     * @param  User $user
+     * @param  int $id
+     *
      * @return void
      */
-    public function delete(User $user): void
+    public function delete(int $id): void
     {
-        $user->delete();
+        $this->model::findOrFail($id)->delete();
     }
 
     /**

@@ -1,5 +1,5 @@
-@extends('layouts.app')
+{{--@extends('layouts.app')--}}
 
-@section('content')
-    <router-view></router-view>
-@endsection
+{{--@section('content')--}}
+{{--    <router-view></router-view>--}}
+{{--@endsection--}}

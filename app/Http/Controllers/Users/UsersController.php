@@ -5,18 +5,20 @@ namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
-use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\View\View;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response as ResponseAlias;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+/**
+ * class UserController
+ */
 final class UsersController extends Controller
 {
     /**
@@ -33,19 +35,29 @@ final class UsersController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return JsonResponse
+     * @return View
      */
-    public function index(): JsonResponse
+    public function index(): View
     {
         try {
             $users = $this->userService->list();
 
-            return response()->json(new UserCollection($users));
+            return view('users.index', compact('users'));
         } catch (Throwable $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 
-            return response()->json('Unknown error occurred', 500);
+            return view('welcome');
         }
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return View
+     */
+    public function create(): View
+    {
+        return view('users.create');
     }
 
     /**
@@ -53,9 +65,9 @@ final class UsersController extends Controller
      *
      * @param UserRequest $request
      *
-     * @return JsonResponse
+     * @return View
      */
-    public function store(UserRequest $request): JsonResponse
+    public function store(UserRequest $request): View
     {
         try {
             /**@var UploadedFile $uploadedFile */
@@ -70,11 +82,11 @@ final class UsersController extends Controller
 
             $user = $this->userService->store([...$attributes, 'photo' => $path ?? null]);
 
-            return response()->json($user->id, ResponseAlias::HTTP_OK);
+            return view('users.show', compact('user'));
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 
-            return response()->json('Unknown error occurred', ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
+            abort(500);
         }
     }
 
@@ -83,20 +95,45 @@ final class UsersController extends Controller
      *
      * @param int $id
      *
-     * @return JsonResponse
+     * @return View
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id): View
+    {
+        try {
+            $user = $this->userService->find($id);
+            $user = new UserResource($user);
+
+            return view('users.show', compact('user'));
+        } catch (ModelNotFoundException $e) {
+            $this->logger->error($e->getMessage(), ['exception' => $e]);
+
+            abort(404);
+        } catch (Throwable $e) {
+            $this->logger->error($e->getMessage(), ['exception' => $e]);
+
+            abort(500);
+        }
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     *
+     * @return View
+     */
+    public function edit(int $id): View
     {
         try {
             $user = $this->userService->find($id);
 
-            return response()->json(new UserResource($user));
+            return view('users.edit', compact('user'));
         } catch (ModelNotFoundException $e) {
-            return response()->json($e->getMessage(), ResponseAlias::HTTP_NOT_FOUND);
+            abort(404);
         } catch (Throwable $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 
-            return response()->json('Unknown error occurred', ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
+            abort(500);
         }
     }
 
@@ -106,9 +143,9 @@ final class UsersController extends Controller
      * @param UserRequest $request
      * @param User $user
      *
-     * @return JsonResponse
+     * @return View
      */
-    public function update(UserRequest $request, User $user): JsonResponse
+    public function update(User $user, UserRequest $request): View
     {
         try {
             /**@var UploadedFile $uploadedFile */
@@ -119,7 +156,13 @@ final class UsersController extends Controller
             }
 
             $attributes = $request->all();
-            $attributes['password'] = $this->userService->hash($attributes['password']);
+            $password = $request->get('password');
+
+            if (isset($password) && !empty($password)) {
+                $attributes['password'] = $this->userService->hash($password);
+            }else {
+                unset($attributes['password']);
+            }
 
             $this->userService->update(
                 $user, [
@@ -128,11 +171,11 @@ final class UsersController extends Controller
                 ]
             );
 
-            return response()->json('Ok', ResponseAlias::HTTP_ACCEPTED);
+            return view('users.show', compact('user'));
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 
-            return response()->json($e->getMessage(), ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
+            abort(500);
         }
     }
 
@@ -141,80 +184,81 @@ final class UsersController extends Controller
      *
      * @param int $id
      *
-     * @return JsonResponse
+     * @return Response
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $id): Response
     {
         try {
             $this->userService->destroy($id);
 
-            return response()->json('Ok', ResponseAlias::HTTP_NO_CONTENT);
+            return back()->with('success', 'User successfully deleted');
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 
-            return response()->json('Unknown error occurred', 500);
+            abort(500);
         }
     }
 
     /**
      * Display a list of trashed users
      *
-     * @return JsonResponse
+     * @return View
      */
-    public function trashed(): JsonResponse
+    public function trashed(): View
     {
         try {
             $users = $this->userService->listTrashed();
 
-            return response()->json(new UserCollection($users));
+            return view('users.trashed', compact('users'));
         } catch (Throwable $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 
-            return response()->json('Unknown error occurred', 500);
+            abort(500);
         }
     }
 
     /**
-     * @param string|int $id
+     * @param int $id
      *
-     * @return JsonResponse
+     * @return Response
      */
-    public function restore(string|int $id): JsonResponse
+    public function restore(int $id): Response
     {
         try {
             $this->userService->restore($id);
 
-            return response()->json('Ok', ResponseAlias::HTTP_OK);
+            return back()->with('success', 'User successfully restored');
         } catch (Throwable $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 
-            return response()->json($e->getMessage(), 500);
+            abort(500);
         }
     }
 
     /**
      * Soft delete user
      *
-     * @param User $user
+     * @param int $id
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return Response
      */
-    public function delete(User $user): JsonResponse
+    public function delete(int $id): Response
     {
         try {
             // better to use policy or gate
-            if (auth()->user()->id === $user->id) {
+            if (auth()->user()->id === $id) {
                 // Defense from fool (me :D) but ofc user can delete -> logout
-                return response()->json('You can not delete yourself', ResponseAlias::HTTP_FORBIDDEN);
+                return back()->with('error', 'You are not allowed to delete yourself');
             }
 
-            $this->userService->delete($user);
+            $this->userService->delete($id);
+            $users = $this->userService->list();
 
-            return response()->json('Ok', ResponseAlias::HTTP_NO_CONTENT);
+            return response(view('users.index', compact('users')));
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 
-            return response()->json($e->getMessage(), ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
+           abort(500);
         }
     }
 }

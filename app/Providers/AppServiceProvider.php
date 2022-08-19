@@ -7,6 +7,7 @@ use App\Services\Interfaces\UserServiceInterface;
 use App\Services\UserService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Paginator::useBootstrap();
+
         /**
          * Paginate a standard Laravel Collection.
          *
@@ -57,7 +60,7 @@ class AppServiceProvider extends ServiceProvider
         Route::macro('softDeletes', function ($prefix) {
             Route::group([
                 'prefix' => $prefix,
-                'middleware' => ['auth:sanctum'],
+                'middleware' => ['auth'],
             ], function () {
                 Route::get('trashed/list',  [UsersController::class, 'trashed'])->name('users.trashed');
                 Route::patch('{id}/restore', [UsersController::class, 'restore'])->name('users.restore');

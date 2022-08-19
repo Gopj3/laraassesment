@@ -15,6 +15,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::softDeletes('users');
-Route::middleware('auth:sanctum')->resource('users', UsersController::class, ['except' => ['create', 'edit', 'update']]);
-Route::middleware('auth:sanctum')->post('users/{user}', [UsersController::class, 'update']);
+//Route::softDeletes('users');
+//Route::middleware('auth:sanctum')->resource('users', UsersController::class, ['except' => ['create', 'edit', 'update']]);
+//Route::middleware('auth:sanctum')->post('users/{user}', [UsersController::class, 'update']);

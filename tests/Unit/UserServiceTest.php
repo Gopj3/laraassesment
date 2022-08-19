@@ -101,9 +101,9 @@ class UserServiceTest extends TestCase
         $user = User::factory()->create();
 
         $userService = new UserService(app(User::class), app(Request::class));
-        $userService->delete($user);
+        $userService->delete($user->id);
 
-        $this->assertNotNull($user->deleted_at);
+        $this->assertDatabaseMissing('users', ['id' => $user->id, 'deleted_at' => null]);
     }
 
     /**
@@ -112,8 +112,6 @@ class UserServiceTest extends TestCase
      */
     public function it_can_return_a_paginated_list_of_trashed_users()
     {
-        // TODO CHECK TESTS AFTER CHANGING ITEMS PER PAGE
-
         User::factory()->count(10)->create(['deleted_at' => new \DateTime('now')]);
         $userService = new UserService(app(User::class), app(Request::class));
         $paginated = $userService->listTrashed();
