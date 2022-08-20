@@ -22,6 +22,7 @@ use Throwable;
 final class UsersController extends Controller
 {
     /**
+     * Better here to inject interface, because of SOLID
      * @param UserService $userService
      * @param LoggerInterface $logger
      */

@@ -62,3 +62,50 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Run the application
+
+cd .docker
+check the env file for docker - change php container to what you need (for now it is mac os container for ARM)
+
+docker-compose up -d
+
+docker exec -it container_name bash
+
+## Inside container
+
+sudo -s
+
+composer i
+
+php artisan config:cache --env=local
+
+## For tests
+
+docker exec -it mysq_container_name bash
+
+mysql
+
+Create database tests;
+
+back to php container
+
+php artisan config:cache --env=testing
+
+php artisan test
+
+## NPM
+
+open new terminal 
+
+n 18.0.0 (using node package manager)
+
+In the project it is possible to run Vue.js - views are presented but need to configure sanctum stateless option, uncomment api and change user controller return types to json
+
+npm run dev
+
+## Browser
+
+check localhost::8000
+
+
