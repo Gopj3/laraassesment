@@ -75,6 +75,8 @@ final class UserService implements UserServiceInterface
      */
     public function store(array $attributes): User
     {
+        $attributes['password'] = $this->hash($attributes['password']);
+
         return $this->model::create($attributes);
     }
 
@@ -100,6 +102,12 @@ final class UserService implements UserServiceInterface
      */
     public function update(User $user, array $attributes): bool
     {
+        if (isset($attributes['password']) && !empty($attributes['password'])) {
+            $attributes['password'] = $this->hash($attributes['password']);
+        } else {
+            unset($attributes['password']);
+        }
+
         $user->update($attributes);
 
         return $user->save();

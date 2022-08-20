@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Services\UserService;
+use App\Services\Interfaces\UserServiceInterface;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\View\View;
@@ -22,13 +22,12 @@ use Throwable;
 final class UsersController extends Controller
 {
     /**
-     * Better here to inject interface, because of SOLID
-     * @param UserService $userService
+     * @param UserServiceInterface $userService
      * @param LoggerInterface $logger
      */
     public function __construct(
-        private readonly UserService     $userService,
-        private readonly LoggerInterface $logger
+        private readonly UserServiceInterface $userService,
+        private readonly LoggerInterface      $logger
     )
     {
     }
@@ -78,10 +77,7 @@ final class UsersController extends Controller
                 $path = $this->userService->upload($uploadedFile);
             }
 
-            $attributes = $request->all();
-            $attributes['password'] = $this->userService->hash($attributes['password']);
-
-            $user = $this->userService->store([...$attributes, 'photo' => $path ?? null]);
+            $user = $this->userService->store([...$request->all(), 'photo' => $path ?? null]);
 
             return view('users.show', compact('user'));
         } catch (Exception $e) {
@@ -119,7 +115,7 @@ final class UsersController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      *
      * @return View
      */
@@ -158,21 +154,7 @@ final class UsersController extends Controller
                 $path = $this->userService->upload($uploadedFile);
             }
 
-            $attributes = $request->all();
-            $password = $request->get('password');
-
-            if (isset($password) && !empty($password)) {
-                $attributes['password'] = $this->userService->hash($password);
-            }else {
-                unset($attributes['password']);
-            }
-
-            $this->userService->update(
-                $user, [
-                    ...$attributes,
-                    'photo' => $path ?? $user->photo,
-                ]
-            );
+            $this->userService->update($user, [...$request->all(), 'photo' => $path ?? $user->photo]);
 
             return view('users.show', compact('user'));
         } catch (\Exception $e) {
@@ -261,7 +243,7 @@ final class UsersController extends Controller
         } catch (Exception $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 
-           abort(500);
+            abort(500);
         }
     }
 }

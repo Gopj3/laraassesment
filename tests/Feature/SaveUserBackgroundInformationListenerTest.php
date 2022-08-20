@@ -27,6 +27,8 @@ class SaveUserBackgroundInformationListenerTest extends TestCase
      */
     public function it_should_create_user_and_details_of_the_user()
     {
+        // Before test, it should be manifest.json (npm run dev)
+
         $user = User::factory()->make();
         $email = $this->faker()->safeEmail();
         $username = $this->faker()->userName();
