@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
@@ -94,7 +95,7 @@ class User extends Authenticatable
     public function getFullNameAttribute(): string
     {
         if ($this->middlename) {
-            $middleInitial = substr($this->middlename, 0, 1);
+            $middleInitial = strtoupper(substr($this->middlename, 0, 1));
 
             return "$this->firstname $middleInitial. $this->lastname";
         }

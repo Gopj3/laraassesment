@@ -37,12 +37,12 @@ final class UserService implements UserServiceInterface
         return [
             'firstname' => 'required|max:255|string',
             'lastname' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
-            'email' => ['required', 'max:255', Rule::unique('users')->ignore($user)],
+            'username' => 'required|string|max:255|min:4',
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user)],
             'middlename' => 'string|max:255|nullable',
             'suffixname' => 'string|max:255|nullable',
             'prefixname' => [new Enum(PrefixNameEnum::class), 'nullable'],
-            'file' => 'file|image|max:10240',
+            'file' => 'file|image|max:10240|mimes:jpeg,png,jpg',
             'password' => [
                 'required',
                 'string',

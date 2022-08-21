@@ -10,11 +10,15 @@
                         <div class="mb-3">
                             <div>
                                 <input
-                                    class="form-control"
+                                    class="form-control @error('file') is-invalid @enderror"
                                     type="file"
                                     id="formFileLg"
                                     name="file"
                                 >
+
+                                @error('file')
+                                <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <div class="mb-3">
